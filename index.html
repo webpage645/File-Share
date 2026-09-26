@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transfer Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F3F5FA;
+    --surface: #FFFFFF;
+    --ink: #10162B;
+    --ink-soft: #656E8C;
+    --line: #E3E7F2;
+    --navy: #1B2559;
+    --blue: #2F6FED;
+    --blue-soft: #E7EFFF;
+    --coral: #FF6B4A;
+    --coral-soft: #FFE9E3;
+    --violet: #7C5CFC;
+    --violet-soft: #EEE9FF;
+    --green: #16A34A;
+    --green-soft: #E4F7EA;
+    --red: #E14D4D;
+    --red-soft: #FBE6E6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0B0E1A; --surface: #131A30; --ink: #EEF1FB; --ink-soft: #8B93B3;
+      --line: #232B47; --navy: #C9D3FF; --blue: #5C8CFF; --blue-soft: #1B2544;
+      --coral: #FF8267; --coral-soft: #2C1B1D; --violet: #9E86FF; --violet-soft: #211B3C;
+      --green: #34D573; --green-soft: #12241A; --red: #FF6B6B; --red-soft: #2B1717;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background:
+      radial-gradient(900px 400px at 15% -10%, var(--violet-soft), transparent 60%),
+      radial-gradient(700px 380px at 110% 0%, var(--blue-soft), transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 30px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 44px);
+    padding-left: 18px;
+    padding-right: 18px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+
+  .brand {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+  }
+  .brand .mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .brand .mark svg { width: 18px; height: 18px; color: #fff; }
+  .brand .word { font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+
+  .appbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 16px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .appbar .brand { margin: 0; }
+
+  .pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 6px 11px 6px 9px; border-radius: 999px;
+  }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-soft); flex-shrink: 0; }
+  .pill.live { color: var(--green); border-color: var(--green-soft); background: var(--green-soft); }
+  .pill.live .pill-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(22, 163, 74, .18); }
+
+  .eyebrow {
+    font-size: 12px; font-weight: 700; color: var(--blue);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin: 0 0 10px 2px;
+  }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 11px; text-align: center; border-radius: 11px;
+    border: 1px solid var(--line); background: var(--surface); cursor: pointer;
+    font-size: 13.5px; font-weight: 600; color: var(--ink-soft);
+    transition: all .15s ease;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 6px 16px -6px rgba(47, 111, 237, .45);
+  }
+
+  .panel, .screen { display: none; }
+  .panel.active, .screen.active { display: block; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px; margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(16, 22, 43, .04);
+  }
+
+  .code-box {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 36px; font-weight: 800; letter-spacing: 6px; text-align: center;
+    padding: 20px; border-radius: 14px; word-break: break-all;
+    background: linear-gradient(135deg, var(--blue-soft), var(--violet-soft));
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .hint { font-size: 13px; color: var(--ink-soft); text-align: center; }
+
+  input[type=text] {
+    width: 100%; font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 22px; font-weight: 700; text-align: center; letter-spacing: 4px;
+    padding: 15px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: var(--bg); color: var(--ink); margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--blue); }
+
+  button {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, .5);
+  }
+  button:disabled { opacity: .5; box-shadow: none; }
+  button.secondary {
+    background: var(--surface); color: var(--ink-soft); border: 1px solid var(--line);
+    margin-top: 12px; box-shadow: none;
+  }
+
+  .status-row {
+    display: flex; align-items: center; gap: 8px; font-size: 13px;
+    color: var(--ink-soft); margin: 12px 0;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); flex-shrink: 0; }
+  .dot.live { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+
+  input[type=file] { display: none; }
+  .drop {
+    border: 1.5px dashed var(--blue);
+    border-radius: 14px; padding: 26px 18px;
+    text-align: center; cursor: pointer;
+    background: var(--blue-soft);
+    margin-bottom: 14px;
+  }
+  .drop svg { width: 26px; height: 26px; color: var(--blue); margin-bottom: 8px; }
+  .drop .label { font-weight: 700; font-size: 14.5px; color: var(--navy); }
+  .drop .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 3px; }
+  .drop:active { filter: brightness(0.97); }
+
+  ul.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  li.file {
+    display: flex; align-items: center; gap: 12px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 13px; padding: 10px;
+  }
+  .thumb {
+    width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb.pdf { background: var(--red-soft); color: var(--red); }
+  .thumb.generic { background: var(--line); color: var(--ink-soft); }
+  .thumb svg { width: 19px; height: 19px; }
+
+  .file .meta { flex: 1; min-width: 0; }
+  .file .name {
+    font-size: 13.5px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .file .sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .badge {
+    font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: .02em;
+  }
+  .badge.sent { background: var(--violet-soft); color: var(--violet); }
+  .badge.recv { background: var(--green-soft); color: var(--green); }
+
+  li.file a {
+    padding: 8px 13px; border-radius: 9px; background: var(--blue-soft); color: var(--blue);
+    text-decoration: none; font-size: 12.5px; font-weight: 700; flex-shrink: 0;
+  }
+  .empty {
+    text-align: center; color: var(--ink-soft); font-size: 13.5px; padding: 24px 10px;
+    border: 1px dashed var(--line); border-radius: 14px; background: var(--surface);
+  }
+  .spinner {
+    width: 13px; height: 13px; border: 2px solid var(--line); border-top-color: var(--blue);
+    border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="appbar">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="m9.5 14 2 2 3.5-3.5"/></svg></div>
+      <div class="word">Transfer Case Files</div>
+    </div>
+    <div class="pill" id="sessionPill"><span class="pill-dot"></span>New session</div>
+  </div>
+
+  <div class="eyebrow">Device pairing</div>
+
+  <!-- SETUP SCREEN -->
+  <div class="screen active" id="screenSetup">
+    <div class="tabs">
+      <div class="tab active" id="tabReceive">Generate code</div>
+      <div class="tab" id="tabSend">Enter code</div>
+    </div>
+
+    <div class="panel active" id="panelReceive">
+      <div class="card">
+        <div class="code-box" id="myCode">…</div>
+        <div class="hint">Type this code on the other device</div>
+      </div>
+      <div class="status-row"><span class="dot" id="dotR"></span><span id="statusR">Setting up…</span></div>
+    </div>
+
+    <div class="panel" id="panelSend">
+      <div class="card">
+        <input type="text" id="codeInput" maxlength="8" placeholder="CODE">
+        <button id="connectBtn">Connect</button>
+      </div>
+      <div class="status-row"><span class="dot" id="dotS"></span><span id="statusS">Enter the code shown on the other device</span></div>
+    </div>
+  </div>
+
+  <!-- CONNECTED SCREEN (shared, works both directions) -->
+  <div class="screen" id="screenConnected">
+    <div class="eyebrow">Active transfer</div>
+    <div class="drop" id="drop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+      <div class="label">Choose photos or PDFs to send</div>
+      <div class="sub">Tap to select, multiple files supported</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,application/pdf" multiple>
+
+    <div id="transferList"><div class="empty">Nothing sent or received yet</div></div>
+
+    <button class="secondary" id="resetBtn">End session &amp; start over</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(function () {
+  const screenSetup = document.getElementById('screenSetup');
+  const screenConnected = document.getElementById('screenConnected');
+  const tabReceive = document.getElementById('tabReceive');
+  const tabSend = document.getElementById('tabSend');
+  const panelReceive = document.getElementById('panelReceive');
+  const panelSend = document.getElementById('panelSend');
+  const dotR = document.getElementById('dotR');
+  const statusR = document.getElementById('statusR');
+  const dotS = document.getElementById('dotS');
+  const statusS = document.getElementById('statusS');
+  const codeInput = document.getElementById('codeInput');
+  const connectBtn = document.getElementById('connectBtn');
+  const dropEl = document.getElementById('drop');
+  const fileInput = document.getElementById('fileInput');
+  const transferList = document.getElementById('transferList');
+  const resetBtn = document.getElementById('resetBtn');
+  const sessionPill = document.getElementById('sessionPill');
+
+  let peer = null;
+  let conn = null;
+  const items = []; // {type:'sent'|'recv', name, size, contentType, url?}
+
+  const ICONS = {
+    pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+    generic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>'
+  };
+
+  tabReceive.addEventListener('click', () => switchTab('receive'));
+  tabSend.addEventListener('click', () => switchTab('send'));
+
+  function switchTab(which) {
+    tabReceive.classList.toggle('active', which === 'receive');
+    tabSend.classList.toggle('active', which === 'send');
+    panelReceive.classList.toggle('active', which === 'receive');
+    panelSend.classList.toggle('active', which === 'send');
+    if (which === 'receive' && !peer) startHost();
+  }
+
+  function genCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+  function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function setStatusR(live, text) { dotR.classList.toggle('live', live); statusR.textContent = text; }
+  function setStatusS(live, text) { dotS.classList.toggle('live', live); statusS.textContent = text; }
+
+  function startHost() {
+    const code = genCode();
+    document.getElementById('myCode').textContent = code;
+    setStatusR(false, 'Setting up…');
+    peer = new Peer('msh-' + code);
+    peer.on('open', () => setStatusR(false, 'Code ready — waiting for the other device'));
+    peer.on('connection', (c) => {
+      conn = c;
+      wireConnection();
+      conn.on('open', () => goConnected());
+    });
+    peer.on('error', () => setStatusR(false, 'Something went wrong — reload the page'));
+  }
+
+  connectBtn.addEventListener('click', () => {
+    const code = codeInput.value.trim().toUpperCase();
+    if (!code) return;
+    connectBtn.disabled = true;
+    setStatusS(false, 'Connecting…');
+    peer = new Peer();
+    peer.on('open', () => {
+      conn = peer.connect('msh-' + code, { reliable: true });
+      wireConnection();
+      conn.on('open', () => goConnected());
+      conn.on('error', () => {
+        setStatusS(false, 'Could not connect — check the code');
+        connectBtn.disabled = false;
+      });
+    });
+    peer.on('error', () => {
+      setStatusS(false, 'Could not connect — check the code');
+      connectBtn.disabled = false;
+    });
+  });
+
+  let pendingMeta = null;
+  function wireConnection() {
+    conn.on('data', (data) => {
+      if (data && data.__meta) {
+        pendingMeta = data;
+      } else if (pendingMeta) {
+        const blob = data instanceof Blob ? data : new Blob([data], { type: pendingMeta.type || 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        items.unshift({ type: 'recv', name: pendingMeta.name, size: pendingMeta.size, contentType: pendingMeta.type, url });
+        renderItems();
+        pendingMeta = null;
+      }
+    });
+    conn.on('close', () => {
+      sessionPill.classList.remove('live');
+      sessionPill.lastChild.textContent = 'Disconnected';
+    });
+  }
+
+  function goConnected() {
+    screenSetup.classList.remove('active');
+    screenConnected.classList.add('active');
+    sessionPill.classList.add('live');
+    sessionPill.lastChild.textContent = 'Connected';
+    renderItems();
+  }
+
+  dropEl.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length) {
+      sendFiles(Array.from(e.target.files));
+      fileInput.value = '';
+    }
+  });
+
+  function sendFiles(files) {
+    for (const file of files) {
+      const url = file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+      items.unshift({ type: 'sent', name: file.name, size: file.size, contentType: file.type, url });
+      renderItems();
+      conn.send({ __meta: true, name: file.name, type: file.type, size: file.size });
+      conn.send(file);
+    }
+  }
+
+  function thumbFor(it) {
+    if (it.contentType && it.contentType.startsWith('image/') && it.url) {
+      return `<div class="thumb"><img src="${it.url}" alt=""></div>`;
+    }
+    if (it.contentType === 'application/pdf') {
+      return `<div class="thumb pdf">${ICONS.pdf}</div>`;
+    }
+    return `<div class="thumb generic">${ICONS.generic}</div>`;
+  }
+
+  function renderItems() {
+    if (items.length === 0) {
+      transferList.innerHTML = '<div class="empty">Nothing sent or received yet</div>';
+      return;
+    }
+    let html = '<ul class="files">';
+    for (const it of items) {
+      const badge = it.type === 'sent'
+        ? '<span class="badge sent">Sent</span>'
+        : '<span class="badge recv">Received</span>';
+      const action = it.type === 'recv'
+        ? `<a href="${it.url}" download="${escapeHtml(it.name)}">Download</a>`
+        : '';
+      html += `<li class="file">${thumbFor(it)}<div class="meta"><div class="name">${escapeHtml(it.name)}</div><div class="sub">${badge} · ${fmtSize(it.size)}</div></div>${action}</li>`;
+    }
+    html += '</ul>';
+    transferList.innerHTML = html;
+  }
+
+  resetBtn.addEventListener('click', () => {
+    if (conn) { try { conn.close(); } catch (e) {} }
+    if (peer) { try { peer.destroy(); } catch (e) {} }
+    peer = null; conn = null; pendingMeta = null;
+    items.length = 0;
+    codeInput.value = '';
+    connectBtn.disabled = false;
+    sessionPill.classList.remove('live');
+    sessionPill.lastChild.textContent = 'New session';
+    screenConnected.classList.remove('active');
+    screenSetup.classList.add('active');
+    switchTab('receive');
+  });
+
+  // Auto-start host on load since that tab is active by default
+  startHost();
+})();
+</script>
+</body>
+</html>

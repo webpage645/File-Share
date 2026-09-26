@@ -200,6 +200,19 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .scan-card {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .scan-card img {
+    width: 84px; height: 84px; border-radius: 10px;
+    background: #fff; padding: 6px; border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .scan-card .scan-text .title {
+    font-weight: 700; font-size: 14px; color: var(--navy); margin-bottom: 3px;
+  }
+  .scan-card .scan-text .sub { font-size: 12.5px; color: var(--ink-soft); }
 
 </style>
 </head>
@@ -211,6 +224,14 @@
       <div class="word">Transfer Case Files</div>
     </div>
     <div class="pill" id="sessionPill"><span class="pill-dot"></span>New session</div>
+  </div>
+
+  <div class="card scan-card">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQMAAABDsxw2AAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB30lEQVRoge2ZO47DMAxEabhI6SPkKD6adTQfJUdImUIwV/wp2iDAbsPExbBZQX6bZjAUP0T/i4092nnifant78VvrvHtBiwZu6kYc7t8NEzO10cT5+4HCWD5mEhzn9lumljMivk/MldgH8TEIPuiBpm4ELAzY3Q53EdyWBjYJ7Ge3/ig1R6XIzLeuzQILAGL99xeGclvItYWJtIAlowNod6hPwPY1zDTtCnYojnLDszll7jA8rEj6jFvUiS/dcMVivwGLA9Tp+ztTdFCa5fLLp+VXk9DAfs2dmW2RlJDxXVNSTr9aHOApWJSFa9jk+Jf/dPGlYBlY5t08at1IhKzYy/5DVgq5lUxW6u4jl/JVDJNgZ0A23olYBajIb/JLxTywgxYPsb2svPd5StLfScWsCTMJlrVCi33jhz9xroVYOnYMObVArgP54V31YCdBDu8JOjT4BhIKub5DVgu5p2IFWbmI3tc3Fnsu11gedgz+m7X8lt0KwzsNNjGHj6xr9bpl3GfRQQsGTO9fKto5fEjbmga8huwTEw3I7NLYyuSKcb1QxoE9hmMo/TSG5/Jq6WAnQ5zQ+lKpSye6CRenAUsAYv8plgMu/ohtorAUjEORcwyNV6Z2Fi9KwmAfQf7X/wAL+RVH8eAor8AAAAASUVORK5CYII=" alt="QR code to open this page">
+    <div class="scan-text">
+      <div class="title">Scan to open on your phone</div>
+      <div class="sub">Point your camera here to load this page on another device</div>
+    </div>
   </div>
 
   <div class="eyebrow">Device pairing</div>

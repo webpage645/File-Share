@@ -297,6 +297,18 @@
   const resetBtn = document.getElementById('resetBtn');
   const sessionPill = document.getElementById('sessionPill');
 
+  // STUN alone often fails when devices are on different networks (e.g. phone
+  // on mobile data, computer on WiFi) because of NAT/firewalls. Adding a TURN
+  // relay makes the connection work in those cases too.
+  const ICE_CONFIG = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  };
+
   let peer = null;
   let conn = null;
   const items = []; // {type:'sent'|'recv', name, size, contentType, url?}
@@ -339,7 +351,7 @@
     const code = genCode();
     document.getElementById('myCode').textContent = code;
     setStatusR(false, 'Setting up…');
-    peer = new Peer('msh-' + code);
+    peer = new Peer('msh-' + code, { config: ICE_CONFIG });
     peer.on('open', () => setStatusR(false, 'Code ready — waiting for the other device'));
     peer.on('connection', (c) => {
       conn = c;
@@ -354,7 +366,7 @@
     if (!code) return;
     connectBtn.disabled = true;
     setStatusS(false, 'Connecting…');
-    peer = new Peer();
+    peer = new Peer(undefined, { config: ICE_CONFIG });
     peer.on('open', () => {
       conn = peer.connect('msh-' + code, { reliable: true });
       wireConnection();

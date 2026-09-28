@@ -302,12 +302,13 @@
   const METERED_APP = 'fileshare';
   const METERED_KEY = '4fddb10453760d4a0ac667e4';
   let iceConfigPromise = null;
+  let relayStatus = 'pending';
   function getIceConfig() {
     if (!iceConfigPromise) {
       iceConfigPromise = fetch('https://' + METERED_APP + '.metered.live/api/v1/turn/credentials?apiKey=' + METERED_KEY)
         .then(r => { if (!r.ok) throw new Error('turn ' + r.status); return r.json(); })
-        .then(servers => ({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }].concat(servers) }))
-        .catch(() => { iceConfigPromise = null; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; });
+        .then(servers => { relayStatus = 'OK'; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }].concat(servers) }; })
+        .catch(() => { relayStatus = 'FAILED'; iceConfigPromise = null; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; });
     }
     return iceConfigPromise;
   }
@@ -353,42 +354,45 @@
   async function startHost() {
     const code = genCode();
     document.getElementById('myCode').textContent = code;
-    setStatusR(false, 'Setting up…');
+    setStatusR(false, 'Setting up… [v2]');
     peer = {};
+    if (typeof Peer === 'undefined') { setStatusR(false, 'Error: PeerJS library blocked — turn off browser shields/adblock and reload'); return; }
     const ICE_CONFIG = await getIceConfig();
     peer = new Peer('msh-' + code, { config: ICE_CONFIG });
-    peer.on('open', () => setStatusR(false, 'Code ready — waiting for the other device'));
+    const openTimer = setTimeout(() => setStatusR(false, 'Cannot reach the pairing server — check internet / shields, then reload'), 15000);
+    peer.on('open', () => { clearTimeout(openTimer); setStatusR(false, 'Code ready (relay ' + relayStatus + ') — waiting for the other device'); });
     peer.on('connection', (c) => {
       conn = c;
       wireConnection();
       conn.on('open', () => goConnected());
     });
-    peer.on('error', () => setStatusR(false, 'Something went wrong — reload the page'));
+    peer.on('error', (err) => { clearTimeout(openTimer); setStatusR(false, 'Error: ' + (err && err.type ? err.type : 'unknown') + ' — reload the page'); });
   }
 
   connectBtn.addEventListener('click', async () => {
     const code = codeInput.value.trim().toUpperCase();
     if (!code) return;
     connectBtn.disabled = true;
-    setStatusS(false, 'Connecting…');
+    const fail = (msg) => { setStatusS(false, msg); connectBtn.disabled = false; };
+    if (typeof Peer === 'undefined') { fail('Error: PeerJS library blocked — turn off browser shields/adblock and reload'); return; }
+    setStatusS(false, 'Connecting… [v2] 1/3 relay');
     const ICE_CONFIG = await getIceConfig();
+    setStatusS(false, 'Connecting… 2/3 pairing server');
     peer = new Peer(undefined, { config: ICE_CONFIG });
+    const openTimer = setTimeout(() => fail('Cannot reach the pairing server — check internet / shields'), 15000);
     peer.on('open', () => {
+      clearTimeout(openTimer);
+      setStatusS(false, 'Connecting… 3/3 other device (relay ' + relayStatus + ')');
       conn = peer.connect('msh-' + code, { reliable: true });
       wireConnection();
-      const timer = setTimeout(() => {
-        setStatusS(false, 'Timed out — check the code and that the other device is waiting');
-        connectBtn.disabled = false;
-      }, 20000);
+      const timer = setTimeout(() => fail('Timed out (relay ' + relayStatus + ') — keep the other device open on its code screen'), 25000);
       conn.on('open', () => { clearTimeout(timer); goConnected(); });
-      conn.on('error', () => {
-        setStatusS(false, 'Could not connect — check the code');
-        connectBtn.disabled = false;
-      });
+      conn.on('error', (e) => { clearTimeout(timer); fail('Connection error: ' + (e && e.type ? e.type : 'unknown')); });
     });
-    peer.on('error', () => {
-      setStatusS(false, 'Could not connect — check the code');
-      connectBtn.disabled = false;
+    peer.on('error', (err) => {
+      clearTimeout(openTimer);
+      const t = err && err.type ? err.type : 'unknown';
+      fail(t === 'peer-unavailable' ? 'Code not found — check the code and keep the other device open' : 'Error: ' + t);
     });
   });
 

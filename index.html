@@ -297,21 +297,21 @@
   const resetBtn = document.getElementById('resetBtn');
   const sessionPill = document.getElementById('sessionPill');
 
-  // STUN alone often fails when devices are on different networks. We fetch
-  // fresh TURN relay credentials from Metered so connections work from any network.
-  const METERED_APP = 'fileshare';
-  const METERED_KEY = '4fddb10453760d4a0ac667e4';
-  let iceConfigPromise = null;
-  let relayStatus = 'pending';
-  function getIceConfig() {
-    if (!iceConfigPromise) {
-      iceConfigPromise = fetch('https://' + METERED_APP + '.metered.live/api/v1/turn/credentials?apiKey=' + METERED_KEY)
-        .then(r => { if (!r.ok) throw new Error('turn ' + r.status); return r.json(); })
-        .then(servers => { relayStatus = 'OK'; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }].concat(servers) }; })
-        .catch(() => { relayStatus = 'FAILED'; iceConfigPromise = null; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; });
-    }
-    return iceConfigPromise;
-  }
+  // STUN alone often fails when devices are on different networks. These TURN
+  // relay servers (Metered) make the connection work from any network.
+  const TURN_USER = '4fddb10453760d4a0ac667e4';
+  const TURN_PASS = 'LGIXhmRUA5ZUzEU9';
+  let relayStatus = 'OK';
+  const ICE_CONFIG_STATIC = {
+    iceServers: [
+      { urls: 'stun:stun.relay.metered.ca:80' },
+      { urls: 'turn:global.relay.metered.ca:80', username: TURN_USER, credential: TURN_PASS },
+      { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: TURN_USER, credential: TURN_PASS },
+      { urls: 'turn:global.relay.metered.ca:443', username: TURN_USER, credential: TURN_PASS },
+      { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: TURN_USER, credential: TURN_PASS }
+    ]
+  };
+  function getIceConfig() { return Promise.resolve(ICE_CONFIG_STATIC); }
 
   let peer = null;
   let conn = null;

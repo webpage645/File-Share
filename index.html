@@ -297,17 +297,20 @@
   const resetBtn = document.getElementById('resetBtn');
   const sessionPill = document.getElementById('sessionPill');
 
-  // STUN alone often fails when devices are on different networks (e.g. phone
-  // on mobile data, computer on WiFi) because of NAT/firewalls. Adding a TURN
-  // relay makes the connection work in those cases too.
-  const ICE_CONFIG = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-    ]
-  };
+  // STUN alone often fails when devices are on different networks. We fetch
+  // fresh TURN relay credentials from Metered so connections work from any network.
+  const METERED_APP = 'fileshare';
+  const METERED_KEY = '4fddb10453760d4a0ac667e4';
+  let iceConfigPromise = null;
+  function getIceConfig() {
+    if (!iceConfigPromise) {
+      iceConfigPromise = fetch('https://' + METERED_APP + '.metered.live/api/v1/turn/credentials?apiKey=' + METERED_KEY)
+        .then(r => { if (!r.ok) throw new Error('turn ' + r.status); return r.json(); })
+        .then(servers => ({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }].concat(servers) }))
+        .catch(() => { iceConfigPromise = null; return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }; });
+    }
+    return iceConfigPromise;
+  }
 
   let peer = null;
   let conn = null;
@@ -347,10 +350,12 @@
   function setStatusR(live, text) { dotR.classList.toggle('live', live); statusR.textContent = text; }
   function setStatusS(live, text) { dotS.classList.toggle('live', live); statusS.textContent = text; }
 
-  function startHost() {
+  async function startHost() {
     const code = genCode();
     document.getElementById('myCode').textContent = code;
     setStatusR(false, 'Setting up…');
+    peer = {};
+    const ICE_CONFIG = await getIceConfig();
     peer = new Peer('msh-' + code, { config: ICE_CONFIG });
     peer.on('open', () => setStatusR(false, 'Code ready — waiting for the other device'));
     peer.on('connection', (c) => {
@@ -361,16 +366,21 @@
     peer.on('error', () => setStatusR(false, 'Something went wrong — reload the page'));
   }
 
-  connectBtn.addEventListener('click', () => {
+  connectBtn.addEventListener('click', async () => {
     const code = codeInput.value.trim().toUpperCase();
     if (!code) return;
     connectBtn.disabled = true;
     setStatusS(false, 'Connecting…');
+    const ICE_CONFIG = await getIceConfig();
     peer = new Peer(undefined, { config: ICE_CONFIG });
     peer.on('open', () => {
       conn = peer.connect('msh-' + code, { reliable: true });
       wireConnection();
-      conn.on('open', () => goConnected());
+      const timer = setTimeout(() => {
+        setStatusS(false, 'Timed out — check the code and that the other device is waiting');
+        connectBtn.disabled = false;
+      }, 20000);
+      conn.on('open', () => { clearTimeout(timer); goConnected(); });
       conn.on('error', () => {
         setStatusS(false, 'Could not connect — check the code');
         connectBtn.disabled = false;
